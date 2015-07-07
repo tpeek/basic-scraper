@@ -60,6 +60,14 @@ def has_two_tds(elem):
     return is_tr and has_two
 
 
+def clean_data(td):
+    data = td.string
+    try:
+        return data.strip(" \n:-")
+    except AttributeError:
+        return u""
+
+
 if __name__ == '__main__':
     kwargs = {
         'Inspection_Start': '2/1/2013',
@@ -72,8 +80,12 @@ if __name__ == '__main__':
         html, encoding = get_inspection_page(**kwargs)
     doc = parse_source(html, encoding)
     listings = extract_data_listings(doc)
-    for listing in listings:  # <- add this stuff here.
+    for listing in listings[:5]:
         metadata_rows = listing.find('tbody').find_all(
             has_two_tds, recursive=False
         )
-        print len(metadata_rows)
+        for row in metadata_rows:
+            for td in row.find_all('td', recursive=False):
+                print repr(clean_data(td)),
+            print
+        print
