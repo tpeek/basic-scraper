@@ -130,7 +130,7 @@ if __name__ == '__main__':
     doc = parse_source(html, encoding)
     listings = extract_data_listings(doc)
     every = {}
-    for listing in listings[:5]:
+    for listing in listings:
         metadata = extract_restaurant_metadata(listing)
         score_data = extract_score_data(listing)
         both = dict(metadata, **score_data)
