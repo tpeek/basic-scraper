@@ -1,7 +1,7 @@
 import requests
 import bs4
 import sys
-import json
+import re
 
 
 INSPECTION_DOMAIN = 'http://info.kingcounty.gov'
@@ -47,6 +47,19 @@ def parse_source(response, encoding='utf-8'):
     soup = bs4.BeautifulSoup(response, 'html5lib', from_encoding=encoding)
     return soup
 
+
+def extract_data_listings(html):
+    id_finder = re.compile(r'PR[\d]+~')
+    return html.find_all('div', id=id_finder)
+
+
+def has_two_tds(elem):
+    is_tr = elem.name == 'tr'
+    td_children = elem.find_all('td', recursive=False)
+    has_two = len(td_children) == 2
+    return is_tr and has_two
+
+
 if __name__ == '__main__':
     kwargs = {
         'Inspection_Start': '2/1/2013',
@@ -54,10 +67,13 @@ if __name__ == '__main__':
         'Zip_Code': '98109'
     }
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
-        # you will likely have something different here, depending on how
-        # you implemented the load_inspection_page function.
         html, encoding = load_inspection_page('inspection_page.html')
     else:
         html, encoding = get_inspection_page(**kwargs)
     doc = parse_source(html, encoding)
-    print doc.prettify(encoding=encoding)
+    listings = extract_data_listings(doc)
+    for listing in listings:  # <- add this stuff here.
+        metadata_rows = listing.find('tbody').find_all(
+            has_two_tds, recursive=False
+        )
+        print len(metadata_rows)
