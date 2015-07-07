@@ -129,7 +129,25 @@ if __name__ == '__main__':
         html, encoding = get_inspection_page(**kwargs)
     doc = parse_source(html, encoding)
     listings = extract_data_listings(doc)
+    every = {}
     for listing in listings[:5]:
         metadata = extract_restaurant_metadata(listing)
         score_data = extract_score_data(listing)
-        print score_data
+        both = dict(metadata, **score_data)
+        every.update({metadata['Business Name'][0]: both})
+        # both = {}
+        # both.update(metadata)
+        # both.update(score_data)
+        # print both
+        # I didn't think that was what you wanted, was it?
+
+
+    # I like this because you now have access to every score and metadata
+    # for each business, all you need is the business name.
+    for name, dic in every.iteritems():
+        print "========================================"
+        print name
+        print "========================================"
+        for datapoint, value in dic.iteritems():
+            print datapoint, value
+        print
