@@ -1,6 +1,7 @@
 import requests
 import bs4
 import sys
+import json
 
 
 INSPECTION_DOMAIN = 'http://info.kingcounty.gov'
@@ -30,15 +31,16 @@ def get_inspection_page(**kwargs):
     for key, val in kwargs.items():
         if key in INSPECTION_PARAMS:
             params[key] = val
-    response = requests.get(url, params=params)
-    response.raise_for_status()
-    return response
+    resp = requests.get(url, params=params)
+    resp.raise_for_status() # <- This is a no-op if there is no HTTP error
+    # remember, in requests `content` is bytes and `text` is unicode
+    return resp.content, resp.encoding
 
 
 def load_inspection_page(html):
     open_file = open(html)
-    s = open_file.read()
-    return s
+    html = open_file.read()
+    return html, 'utf-8'
 
 
 def parse_source(response, encoding='utf-8'):
@@ -54,12 +56,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
         # you will likely have something different here, depending on how
         # you implemented the load_inspection_page function.
-        response = load_inspection_page('inspection_page.html')
-        html = response.content
-        encoding = response.encoding
+        html, encoding = load_inspection_page('inspection_page.html')
     else:
-        response = get_inspection_page(**kwargs)
-        html = response.content
-        encoding = response.encoding
+        html, encoding = get_inspection_page(**kwargs)
     doc = parse_source(html, encoding)
     print doc.prettify(encoding=encoding)
