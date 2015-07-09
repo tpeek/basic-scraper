@@ -121,7 +121,7 @@ def extract_score_data(listing):
     return data
 
 
-def generate_results(test=False, args):
+def generate_results(test=False, count=10):
     kwargs = {
         'Inspection_Start': '2/1/2013',
         'Inspection_End': '2/1/2015',
@@ -133,7 +133,7 @@ def generate_results(test=False, args):
         html, encoding = get_inspection_page(**kwargs)
     doc = parse_source(html, encoding)
     listings = extract_data_listings(doc)
-    for listing in listings[:args[2]]:
+    for listing in listings[:count]:
         metadata = extract_restaurant_metadata(listing)
         score_data = extract_score_data(listing)
         metadata.update(score_data)
@@ -165,16 +165,10 @@ def get_geojson(result):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Sort and filter your results.")
-    parser.add_argument('Sort by', metavar='S', type=str, default="average")
-    parser.add_argument('# Results', metavar='R', type=int, default=10)
-    parser.add_argument('Order', metavar='O', type=str, default="as")
-    args = parser.parse_args()
-    print args.accumulate(args.intergers)
     test = len(sys.argv) > 1 and sys.argv[1] == 'test'
     total_result = {'type': 'FeatureCollection', 'features': []}
     for result in generate_results(test):
-        geo_result = get_geojson(result, args)
+        geo_result = get_geojson(result)
         pprint.pprint(geo_result)
         total_result['features'].append(geo_result)
     with open('my_map.json', 'w') as fh:
